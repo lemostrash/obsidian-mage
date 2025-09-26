@@ -1,258 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Mage Character</title>
-    <style>
-        :root {
-            --idle-color: #666;
-            --active-color: #7c3aed;
-        }
-        
-        body {
-            margin: 0;
-            padding: 15px;
-            background: transparent;
-            font-family: system-ui;
-            transition: all 0.3s ease;
-        }
-        
-        .container {
-            text-align: center;
-            padding: 10px;
-        }
-        
-        .character-container {
-            position: relative;
-            margin: 0 auto;
-            width: 180px;
-            height: 180px;
-        }
-        
-        #character {
-            width: 100%;
-            height: 100%;
-            border-radius: 15px;
-            transition: all 0.5s ease;
-            filter: grayscale(0.8) brightness(0.9);
-        }
-        
-        .character-active {
-            filter: grayscale(0) brightness(1.2) !important;
-            animation: glow 2s infinite alternate;
-        }
-        
-        .stats {
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(0,0,0,0.05);
-            border-radius: 10px;
-            font-size: 12px;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #e0e0e0;
-            border-radius: 3px;
-            margin: 8px 0;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: var(--active-color);
-            width: 0%;
-            transition: width 0.5s ease;
-            border-radius: 3px;
-        }
-        
-        @keyframes glow {
-            0% { box-shadow: 0 0 10px rgba(124, 58, 237, 0.3); }
-            100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.6); }
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-8px) scale(1.05); }
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-2deg); }
-            75% { transform: rotate(2deg); }
-        }
-        
-        .achievement {
-            animation: bounce 0.5s ease, glow 1s ease;
-        }
-        
-        .new-note-effect {
-            animation: shake 0.3s ease;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mage Character - Obsidian</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <div class="character-container">
-            <img id="character" src="https://i.giphy.com/media/3o7aTskHEUdgCQAXde/giphy.gif" alt="Mage Character">
-        </div>
-        
-        <div class="stats">
-            <div id="status">💤 Esperando ação...</div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress"></div>
+        <!-- Cabeçalho -->
+        <div class="header">
+            <h1>🧙 Mage Companion</h1>
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-dot"></span>
+                Conectando ao Obsidian...
             </div>
-            <div id="counter">Caracteres: <span id="charCount">0</span>/200</div>
-            <div id="notesCount">Notas criadas: <span id="notes">0</span></div>
-            <div id="achievement" style="display:none; color:var(--active-color); font-weight:bold;">🎉 Meta atingida!</div>
+        </div>
+
+        <!-- Personagem -->
+        <div class="character-section">
+            <div class="character-container">
+                <img id="character" src="mage.gif" alt="Mage Character" class="character-idle">
+                <div class="character-effects">
+                    <div class="magic-circle" id="magicCircle"></div>
+                </div>
+            </div>
+            
+            <div class="character-state" id="characterState">
+                <span class="state-icon">💤</span>
+                <span class="state-text">Aguardando atividade...</span>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-icon">📝</span>
+                    <span class="stat-title">Progresso da Nota</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0/200 caracteres</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-icon">📚</span>
+                    <span class="stat-title">Atividade Hoje</span>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="notesCreated">0</span>
+                        <span class="stat-label">Notas criadas</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="charsWritten">0</span>
+                        <span class="stat-label">Caracteres</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="sessionTime">0min</span>
+                        <span class="stat-label">Sessão</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conquistas -->
+        <div class="achievements-section">
+            <h3>🎯 Conquistas</h3>
+            <div class="achievements-grid">
+                <div class="achievement" data-id="first200">
+                    <span class="achievement-icon">⭐</span>
+                    <span class="achievement-text">Primeiros 200 caracteres</span>
+                    <span class="achievement-badge locked">🔒</span>
+                </div>
+                <div class="achievement" data-id="fiveNotes">
+                    <span class="achievement-icon">📖</span>
+                    <span class="achievement-text">5 notas criadas</span>
+                    <span class="achievement-badge locked">🔒</span>
+                </div>
+                <div class="achievement" data-id="dailyWriter">
+                    <span class="achievement-icon">⚡</span>
+                    <span class="achievement-text">1000 caracteres em um dia</span>
+                    <span class="achievement-badge locked">🔒</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Console de Debug -->
+        <div class="debug-section">
+            <details>
+                <summary>🔧 Modo Desenvolvedor</summary>
+                <div class="debug-controls">
+                    <button onclick="simulateTyping(50)">+50 caracteres</button>
+                    <button onclick="simulateNewNote()">Nova Nota</button>
+                    <button onclick="resetStats()">Resetar</button>
+                </div>
+                <div class="debug-log" id="debugLog"></div>
+            </details>
         </div>
     </div>
 
-    <script>
-        class MageSystem {
-            constructor() {
-                this.currentChars = 0;
-                this.totalNotes = 0;
-                this.isActive = false;
-                
-                this.elements = {
-                    character: document.getElementById('character'),
-                    status: document.getElementById('status'),
-                    charCount: document.getElementById('charCount'),
-                    progress: document.getElementById('progress'),
-                    notes: document.getElementById('notes'),
-                    achievement: document.getElementById('achievement')
-                };
-                
-                this.init();
-            }
-            
-            init() {
-                this.setupEventListeners();
-                this.loadFromStorage();
-                this.updateDisplay();
-                
-                // Simulação - na versão final isso virá do Obsidian API
-                this.startDemoMode();
-            }
-            
-            setupEventListeners() {
-                // Event listeners para comunicação com Obsidian
-                window.addEventListener('message', this.handleMessage.bind(this));
-            }
-            
-            handleMessage(event) {
-                // Aqui virá a comunicação com o plugin do Obsidian
-                if (event.data.type === 'characterCount') {
-                    this.updateCharacterCount(event.data.count);
-                } else if (event.data.type === 'newNote') {
-                    this.onNewNoteCreated();
-                }
-            }
-            
-            updateCharacterCount(count) {
-                this.currentChars = count;
-                this.saveToStorage();
-                this.updateDisplay();
-                
-                if (count >= 200 && !this.isActive) {
-                    this.activateCharacter();
-                } else if (count < 200 && this.isActive) {
-                    this.deactivateCharacter();
-                }
-            }
-            
-            onNewNoteCreated() {
-                this.totalNotes++;
-                this.elements.notes.textContent = this.totalNotes;
-                this.elements.character.classList.add('new-note-effect');
-                
-                setTimeout(() => {
-                    this.elements.character.classList.remove('new-note-effect');
-                }, 300);
-                
-                this.saveToStorage();
-            }
-            
-            activateCharacter() {
-                this.isActive = true;
-                this.elements.character.classList.add('character-active');
-                this.elements.character.style.animation = 'bounce 2s infinite ease-in-out';
-                this.elements.status.innerHTML = '⚡ **Personagem Ativado!**';
-                this.showAchievement();
-            }
-            
-            deactivateCharacter() {
-                this.isActive = false;
-                this.elements.character.classList.remove('character-active');
-                this.elements.character.style.animation = 'none';
-                this.elements.status.textContent = '💤 Esperando ação...';
-                this.hideAchievement();
-            }
-            
-            showAchievement() {
-                this.elements.achievement.style.display = 'block';
-                this.elements.achievement.classList.add('achievement');
-                
-                setTimeout(() => {
-                    this.elements.achievement.classList.remove('achievement');
-                }, 2000);
-            }
-            
-            hideAchievement() {
-                this.elements.achievement.style.display = 'none';
-            }
-            
-            updateDisplay() {
-                const percentage = Math.min((this.currentChars / 200) * 100, 100);
-                
-                this.elements.charCount.textContent = this.currentChars;
-                this.elements.progress.style.width = percentage + '%';
-                
-                this.elements.progress.style.background = percentage >= 100 ? 
-                    'linear-gradient(90deg, #7c3aed, #a78bfa)' : 
-                    'var(--active-color)';
-            }
-            
-            saveToStorage() {
-                const data = {
-                    chars: this.currentChars,
-                    notes: this.totalNotes
-                };
-                localStorage.setItem('mageSystem', JSON.stringify(data));
-            }
-            
-            loadFromStorage() {
-                const data = JSON.parse(localStorage.getItem('mageSystem') || '{}');
-                this.currentChars = data.chars || 0;
-                this.totalNotes = data.notes || 0;
-            }
-            
-            // MODO DEMO - REMOVA QUANDO INTEGRAR COM OBSIDIAN
-            startDemoMode() {
-                let demoCount = 0;
-                
-                setInterval(() => {
-                    if (demoCount <= 250) {
-                        demoCount += 25;
-                        this.updateCharacterCount(demoCount);
-                    } else {
-                        demoCount = 0;
-                    }
-                }, 4000);
-                
-                // Simular criação de notas
-                setInterval(() => {
-                    this.onNewNoteCreated();
-                }, 10000);
-            }
-        }
-        
-        // Inicializar o sistema quando a página carregar
-        document.addEventListener('DOMContentLoaded', () => {
-            new MageSystem();
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
