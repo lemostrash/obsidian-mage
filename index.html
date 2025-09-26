@@ -3,129 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mage Companion - Obsidian</title>
+    <title>Mage Companion</title>
     <style>
-        :root {
-            --primary: #7c3aed;
-            --secondary: #a78bfa;
-            --text: #333;
-            --bg: rgba(255, 255, 255, 0.95);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --text: #fff;
-                --bg: rgba(30, 30, 30, 0.95);
-            }
-        }
-
         body {
             margin: 0;
             padding: 20px;
             background: transparent;
             font-family: system-ui;
-            color: var(--text);
-        }
-
-        .container {
-            max-width: 320px;
-            margin: 0 auto;
             text-align: center;
         }
-
-        .character-container {
-            position: relative;
-            margin: 15px auto;
-            width: 160px;
-            height: 160px;
+        
+        .container {
+            max-width: 300px;
+            margin: 0 auto;
         }
-
+        
         #character {
-            width: 100%;
-            height: 100%;
+            width: 150px;
+            height: 150px;
             border-radius: 15px;
-            transition: all 0.5s ease;
-            border: 3px solid transparent;
+            transition: all 0.5s;
         }
-
-        .character-idle {
-            filter: grayscale(0.7) brightness(0.8);
-            animation: gentleFloat 4s ease-in-out infinite;
+        
+        .idle {
+            filter: grayscale(0.8);
+            animation: float 4s infinite;
         }
-
-        .character-active {
+        
+        .active {
             filter: none;
-            border-color: var(--primary);
-            animation: excitedBounce 1s ease-in-out infinite;
-            box-shadow: 0 0 25px rgba(124, 58, 237, 0.4);
+            animation: bounce 1s infinite;
+            box-shadow: 0 0 20px gold;
         }
-
-        .stats-panel {
-            background: var(--bg);
-            padding: 15px;
-            border-radius: 12px;
-            margin: 15px 0;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .progress-container {
-            margin: 15px 0;
-        }
-
+        
         .progress-bar {
             width: 100%;
             height: 8px;
-            background: #e0e0e0;
+            background: #ddd;
             border-radius: 4px;
+            margin: 10px 0;
             overflow: hidden;
-            margin-bottom: 8px;
         }
-
+        
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background: #7c3aed;
             width: 0%;
-            transition: width 0.8s ease;
-            border-radius: 4px;
+            transition: width 0.5s;
         }
-
-        .progress-text {
-            font-size: 14px;
-            margin-bottom: 5px;
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
-
-        .note-info {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 10px;
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        .status {
+            margin: 10px 0;
             padding: 8px;
             background: rgba(0,0,0,0.05);
             border-radius: 6px;
-        }
-
-        .last-updated {
-            font-size: 10px;
-            opacity: 0.6;
-            margin-top: 10px;
-        }
-
-        @keyframes gentleFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-4px); }
-        }
-
-        @keyframes excitedBounce {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-10px) scale(1.08); }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
         }
     </style>
 </head>
@@ -133,141 +74,72 @@
     <div class="container">
         <h3>🧙 Mage Companion</h3>
         
-        <div class="character-container">
-            <img id="character" src="https://i.giphy.com/media/3o7aTskHEUdgCQAXde/giphy.gif" class="character-idle" alt="Mage Character">
+        <img id="character" src="https://i.giphy.com/media/3o7aTskHEUdgCQAXde/giphy.gif" class="idle">
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
         </div>
-
-        <div class="stats-panel">
-            <div class="progress-text" id="progressText">Carregando...</div>
-            <div class="progress-container">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div id="charCounter">0/200 caracteres</div>
-            </div>
-            
-            <div class="note-info">
-                <div id="currentNote">Nenhuma nota ativa</div>
-                <div id="noteStats">-</div>
-            </div>
-
-            <div class="last-updated" id="lastUpdated">
-                Atualizado: <span id="updateTime">--:--:--</span>
-            </div>
+        
+        <div id="counter">0/200 caracteres</div>
+        <div class="status" id="status">Aguardando dados...</div>
+        <div id="noteInfo"></div>
+        
+        <div style="margin-top: 15px; font-size: 12px; opacity: 0.7;">
+            Atualize a nota MageTracker para ver changes
         </div>
-
-        <button onclick="forceUpdate()" style="margin-top: 10px; padding: 5px 10px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">
-            🔄 Atualizar Agora
-        </button>
     </div>
 
     <script>
-        class MageSystem {
-            constructor() {
-                this.lastCharCount = 0;
-                this.lastNoteName = '';
-                this.updateInterval = null;
-                
-                this.elements = {
-                    character: document.getElementById('character'),
-                    progressText: document.getElementById('progressText'),
-                    progressFill: document.getElementById('progressFill'),
-                    charCounter: document.getElementById('charCounter'),
-                    currentNote: document.getElementById('currentNote'),
-                    noteStats: document.getElementById('noteStats'),
-                    updateTime: document.getElementById('updateTime')
-                };
-                
-                this.init();
-            }
-
-            init() {
-                this.startAutoUpdate();
-                this.checkProgress(); // Primeira verificação
-            }
-
-            startAutoUpdate() {
-                // Verificar a cada 3 segundos
-                this.updateInterval = setInterval(() => {
-                    this.checkProgress();
-                }, 3000);
-            }
-
-            checkProgress() {
-                try {
-                    // Buscar dados do localStorage (preenchido pelo Dataview)
-                    const charCount = parseInt(localStorage.getItem('mageCurrentChars') || '0');
-                    const noteName = localStorage.getItem('mageCurrentNote') || 'Nenhuma nota';
-                    const totalNotes = parseInt(localStorage.getItem('mageTotalNotes') || '0');
-                    const totalChars = parseInt(localStorage.getItem('mageTotalChars') || '0');
-
-                    this.updateDisplay(charCount, noteName, totalNotes, totalChars);
-                    this.updateTime();
-                    
-                } catch (error) {
-                    console.error('Erro ao verificar progresso:', error);
-                    this.elements.progressText.innerHTML = '❌ Erro ao carregar dados';
-                }
-            }
-
-            updateDisplay(charCount, noteName, totalNotes, totalChars) {
-                const percentage = Math.min((charCount / 200) * 100, 100);
-                
-                // Atualizar elementos visuais
-                this.elements.progressFill.style.width = percentage + '%';
-                this.elements.charCounter.textContent = `${charCount}/200 caracteres`;
-                this.elements.currentNote.textContent = `📄 ${noteName}`;
-                this.elements.noteStats.textContent = `📚 ${totalNotes} notas | 📝 ${totalChars} chars totais`;
-                
-                // Verificar se atingiu a meta
-                if (charCount >= 200) {
-                    this.activateCharacter();
-                    this.elements.progressText.innerHTML = '🎉 <strong>Meta atingida!</strong>';
-                } else {
-                    this.deactivateCharacter();
-                    this.elements.progressText.innerHTML = '💤 Aguardando digitação...';
-                    
-                    if (charCount > 0) {
-                        this.elements.progressText.innerHTML = `📝 Escrevendo... ${200 - charCount} chars restantes`;
-                    }
-                }
-
-                this.lastCharCount = charCount;
-                this.lastNoteName = noteName;
-            }
-
-            activateCharacter() {
-                this.elements.character.classList.remove('character-idle');
-                this.elements.character.classList.add('character-active');
-            }
-
-            deactivateCharacter() {
-                this.elements.character.classList.remove('character-active');
-                this.elements.character.classList.add('character-idle');
-            }
-
-            updateTime() {
-                const now = new Date();
-                this.elements.updateTime.textContent = now.toLocaleTimeString();
-            }
-
-            forceUpdate() {
-                this.checkProgress();
-                this.elements.updateTime.textContent = new Date().toLocaleTimeString() + ' (manual)';
-            }
+        // Buscar parâmetros da URL
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                chars: parseInt(params.get('chars')) || 0,
+                note: params.get('note') || 'Nenhuma nota',
+                updated: params.get('updated') || 'never'
+            };
         }
-
-        // Função global para forçar atualização
-        function forceUpdate() {
-            if (window.mageSystem) {
-                window.mageSystem.forceUpdate();
+        
+        function updateDisplay() {
+            const { chars, note, updated } = getUrlParams();
+            
+            const progress = document.getElementById('progress');
+            const counter = document.getElementById('counter');
+            const status = document.getElementById('status');
+            const character = document.getElementById('character');
+            const noteInfo = document.getElementById('noteInfo');
+            
+            // Atualizar progresso
+            const percent = Math.min((chars / 200) * 100, 100);
+            progress.style.width = percent + '%';
+            counter.textContent = `${chars}/200 caracteres`;
+            noteInfo.textContent = `Nota: ${note}`;
+            
+            // Ativar/desativar personagem
+            if (chars >= 200) {
+                character.className = 'active';
+                status.innerHTML = '🎉 <strong>Meta atingida!</strong>';
+            } else {
+                character.className = 'idle';
+                status.textContent = chars > 0 ? 
+                    `Digitando... ${200 - chars} chars restantes` : 
+                    'Aguardando digitação...';
             }
+            
+            console.log('Dados recebidos:', { chars, note, updated });
         }
-
-        // Inicializar quando a página carregar
-        document.addEventListener('DOMContentLoaded', () => {
-            window.mageSystem = new MageSystem();
-        });
+        
+        // Verificar a cada 2 segundos se há novos parâmetros na URL
+        let lastUrl = window.location.href;
+        setInterval(() => {
+            if (window.location.href !== lastUrl) {
+                lastUrl = window.location.href;
+                updateDisplay();
+            }
+        }, 2000);
+        
+        // Atualizar inicialmente
+        updateDisplay();
     </script>
 </body>
 </html>
