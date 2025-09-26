@@ -17,8 +17,8 @@ class MageSystem {
         this.updateDisplay();
         this.startSessionTimer();
         
-        // Simulação - remover na versão com plugin
-        this.startDemoMode();
+        // ✅ REMOVIDO o modo demo automático
+        this.setConnectionStatus('connected');
     }
 
     cacheElements() {
@@ -50,8 +50,7 @@ class MageSystem {
         // Comunicação com Obsidian
         window.addEventListener('message', this.handleObsidianMessage.bind(this));
         
-        // Fallback para demo
-        window.addEventListener('keydown', this.handleKeydown.bind(this));
+        // ✅ REMOVIDO o listener de teclado que simulava digitação
     }
 
     handleObsidianMessage(event) {
@@ -70,17 +69,16 @@ class MageSystem {
         }
     }
 
-    handleKeydown(event) {
-        // Demo: incrementa caracteres ao digitar (apenas para teste)
-        if (event.key.length === 1) {
-            this.updateCharacterCount(this.currentChars + 1, 'Demo Note');
-        }
-    }
+    // ✅ REMOVIDA a função handleKeydown que simulava digitação
 
     updateCharacterCount(count, noteTitle = 'Nota atual') {
         const previousChars = this.currentChars;
         this.currentChars = count;
-        this.charsWritten += Math.max(0, count - previousChars);
+        
+        // Só incrementa charsWritten se for um aumento real
+        if (count > previousChars) {
+            this.charsWritten += (count - previousChars);
+        }
         
         this.saveToStorage();
         this.updateDisplay();
@@ -131,10 +129,11 @@ class MageSystem {
     }
 
     triggerNewNoteEffect() {
-        this.elements.character.style.animation = 'none';
+        // Efeito visual quando nova nota é criada
+        this.elements.character.style.transform = 'scale(1.1)';
         setTimeout(() => {
-            this.elements.character.style.animation = '';
-        }, 10);
+            this.elements.character.style.transform = 'scale(1)';
+        }, 300);
     }
 
     updateDisplay() {
@@ -174,6 +173,12 @@ class MageSystem {
             achievementElement.querySelector('.achievement-badge').textContent = '✅';
             achievementElement.querySelector('.achievement-badge').classList.add('unlocked');
             
+            // Efeito especial para conquista
+            achievementElement.style.animation = 'celebrate 0.6s ease';
+            setTimeout(() => {
+                achievementElement.style.animation = '';
+            }, 600);
+            
             this.log(`Conquista desbloqueada: ${achievementId}`);
         }
     }
@@ -199,6 +204,17 @@ class MageSystem {
         if (data.totalChars) this.charsWritten = data.totalChars;
         if (data.totalNotes) this.notesCreated = data.totalNotes;
         this.updateDisplay();
+    }
+
+    setConnectionStatus(status) {
+        const statusText = {
+            'connected': 'Conectado ao Obsidian',
+            'disconnected': 'Desconectado',
+            'waiting': 'Aguardando atividade...'
+        };
+        
+        this.elements.connectionStatus.textContent = statusText[status];
+        this.elements.statusDot.className = `status-dot ${status}`;
     }
 
     log(message, data = null) {
@@ -237,36 +253,22 @@ class MageSystem {
         }
     }
 
-    // Demo Mode (remover na versão com plugin)
-    startDemoMode() {
-        this.log('Modo demo ativado');
-        
-        let demoCount = 0;
-        setInterval(() => {
-            if (demoCount <= 250) {
-                demoCount += 10;
-                this.updateCharacterCount(demoCount, 'Nota Demo');
-            } else {
-                demoCount = 0;
-                this.onNewNoteCreated('Nova Nota Demo');
-            }
-        }, 2000);
-    }
+    // ✅ REMOVIDO completamente o startDemoMode()
 }
 
-// Funções globais para debug
+// Funções globais para debug (OPCIONAIS - só para teste manual)
 function simulateTyping(chars) {
     if (window.mageSystem) {
         window.mageSystem.updateCharacterCount(
             window.mageSystem.currentChars + chars, 
-            'Nota Simulada'
+            'Nota Teste'
         );
     }
 }
 
 function simulateNewNote() {
     if (window.mageSystem) {
-        window.mageSystem.onNewNoteCreated('Nota Simulada');
+        window.mageSystem.onNewNoteCreated('Nota Teste');
     }
 }
 
